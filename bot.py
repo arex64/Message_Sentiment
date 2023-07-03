@@ -31,13 +31,13 @@ async def message_history(ctx):
         msg = BotController.retrieve_messages(channel_id)  # get messages from discord
         filtered_messages = BotController.get_specific_attributes(msg, timestamp1,
                                                                   timestamp2)  # filter messages with given timestamps
-        # msg_sentiment = BotController.gpt_response(filtered_messages)  # get sentiment for messages
-        msg_sentiment = 'neutral'
+        msg_sentiment = BotController.gpt_response(filtered_messages)  # get sentiment for messages
         elastic = BotController.messages_elastic(date_range, filtered_messages,
                                                  msg_sentiment)  # create new elastic index
         print(elastic)
+        emojie = "\U0001F44B"
 
-        await ctx.reply('Done')
+        await ctx.reply(f"{emojie} Message sentiment: {msg_sentiment}")
     except ValueError:
         await ctx.send("Invalid date format. Please try again")
 
