@@ -9,7 +9,7 @@ class BotController:
 
     def retrieve_messages(channel_id):
         headers = {
-            'authorization': 'MTg5MDkxMDMwODc0NzE4MjA5.GjMvMa.J7yOJ0V1FEpZLJmQuEUP_MEnZXDzlVVJbwYJtM'
+            'authorization': ''
         }
 
         url = f"https://discord.com/api/v9/channels/{channel_id}/messages?"
@@ -30,32 +30,40 @@ class BotController:
     def get_specific_attributes(msg, timestamp1, timestamp2):
         print(msg)
         messages = msg
-        message_info=[]
+        message_info = []
         result = ''
         for message in messages:
             print(message)
             message_timestamp = int(datetime.fromisoformat(message['timestamp']).timestamp()) // 1000
             if timestamp1 == timestamp2:  # Get messages with a timestamp after timestamp1
                 if message_timestamp <= timestamp1:
-                    output ={
-                        message['author']['username'],
-                        message['content']
-                    }
+                    username = message["author"]["username"]
+                    content = message['content']
+                    timestamp = message['timestamp']
+                    output = {'username': username, 'content': content, 'timestamp': timestamp}
+
                     if output not in message_info:
-                        message_info.append(message_info)
+                        message_info.append(output)
                         print(message_info)
                     result += str(output)
 
             else:
                 if timestamp1 <= message_timestamp <= timestamp2:  # Get messages with between timestamp1 and timestamp2
-                    output = {
-                        message['author']['username'],
-                        message['content']
-                    }
+                    username = message["author"]["username"]
+                    content = message["content"]
+                    timestamp = message['timestamp']
+                    output = {'username': username, 'content': content, 'timestamp': timestamp}
+
                     if output not in message_info:
-                        message_info.append(message_info)
+                        message_info.append(output)
                         print(message_info)
-                    result += str(output)
+        for message in message_info:
+            result += f"{message['username']}:"
+            result += f"{message['content']}"
+            result += "\n"
+            result += f"{message['timestamp']}"
+            result += "\n"
+
         new_msg = json.dumps(result)
         print(new_msg)
         return new_msg

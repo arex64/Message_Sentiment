@@ -42,4 +42,4 @@ async def message_history(ctx):
         await ctx.send("Invalid date format. Please try again")
 
 
-bot.run('MTExNzM5MDc4NjQzOTQyMTk1Mg.GIsF7Y.WYiztlz-NGgNq0_Qifl6zXKC9YHoYX6StGS_-s')  # Bot ID
+bot.run('')  # Bot ID
