@@ -13,7 +13,6 @@ class BotController:
             result += "\n"
             result += f"{message.created_at}"
             result += "\n"
-
         new_msg = json.dumps(result)
         print(new_msg)
         return new_msg

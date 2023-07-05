@@ -3,7 +3,6 @@ import discord
 from discord.ext import commands
 from Controller import BotController
 
-# import datetime
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -17,23 +16,7 @@ async def on_ready():  # check bot is online
 
 @bot.command()
 async def message_sentiment(ctx):
-    # await ctx.send("Please provide the channel ID:")
-
-    def check(msg):
-        return msg.author == ctx.author and msg.channel == ctx.channel
-
     owner = await bot.fetch_user(189091030874718209)
-
-    # try:
-    #     channel_id_msg = await bot.wait_for('message', check=check, timeout=60)
-    #     channel_id = channel_id_msg.content
-    #     channel = await bot.fetch_channel(int(channel_id))
-    #     if not channel:
-    #         await owner.send('Invalid channel ID')
-    #         return
-    # except discord.NotFound:
-    #     await ctx.send('Channel not found.')
-
     await owner.send("Please input after and before dates seperated by a / (YYYY-MM-DD):")
 
     try:
@@ -64,7 +47,6 @@ async def message_sentiment(ctx):
         else:
             messages_content = BotController.get_specific_attributes(filtered_messages)
             msg_sentiment = BotController.gpt_response(messages_content)
-            # msg_sentiment = 'neutral'
             elastic = BotController.messages_elastic(date_range, messages_content,
                                                      msg_sentiment)  # create new elastic index
             print(elastic)
@@ -82,4 +64,4 @@ async def message_sentiment(ctx):
 #         await ctx.send("You do not have the required role to use this command.")
 
 
-bot.run('')  # Bot ID
+bot.run('MTExNzM5MDc4NjQzOTQyMTk1Mg.Gcom0X.enZZBizILgbUto1WBq7u2RSc0lSZ71hgRDh8P4')  # Bot ID
