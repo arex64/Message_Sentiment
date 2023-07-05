@@ -17,48 +17,69 @@ async def on_ready():  # check bot is online
 
 @bot.command()
 async def message_sentiment(ctx):
-    await ctx.send("Please input after and before dates seperated by a / (YYYY-MM-DD):")
-    channel_id = ctx.channel.id  # use the current channel's ID
+    # await ctx.send("Please provide the channel ID:")
+
+    def check(msg):
+        return msg.author == ctx.author and msg.channel == ctx.channel
+
+    owner = await bot.fetch_user(189091030874718209)
+
+    # try:
+    #     channel_id_msg = await bot.wait_for('message', check=check, timeout=60)
+    #     channel_id = channel_id_msg.content
+    #     channel = await bot.fetch_channel(int(channel_id))
+    #     if not channel:
+    #         await owner.send('Invalid channel ID')
+    #         return
+    # except discord.NotFound:
+    #     await ctx.send('Channel not found.')
+
+    await owner.send("Please input after and before dates seperated by a / (YYYY-MM-DD):")
+
     try:
         message = await bot.wait_for('message', check=lambda message: message.author == ctx.author, timeout=70)
         dates = message.content.split('/')
-        if len(dates) != 2:
-            await ctx.send("Invalid input. Please enter both inputs separated by a /.")
-            return
-        date1 = datetime.strptime(dates[0], '%Y-%m-%d')
-        date2 = datetime.strptime(dates[1], '%Y-%m-%d')
-    except ValueError:
-        await ctx.send("Invalid date format. Please use the format 'YYYY-MM-DD'.")
-        return
-    today = datetime.now().today()
-    print(today)
-    if date1 > today or date2 > today:
-        await ctx.send('One or both dates are in the future. Exiting...')
-        await bot.close()
-    else:
-        await ctx.send('Both dates are valid')
-    try:
-        timestamp1 = int(datetime.fromisoformat(dates[0]).timestamp()) // 1000
-        timestamp2 = int(datetime.fromisoformat(dates[1]).timestamp()) // 1000
-    except ValueError:
-        await ctx.send('One or both dates are not available')
-        await bot.close()
-
-    try:
         date_range = dates
+        if len(dates) != 2:
+            await owner.send("Invalid input. Please enter both inputs separated by a /.")
+            return
+        start_date = datetime.strptime(dates[0], '%Y-%m-%d')
+        end_date = datetime.strptime(dates[1], '%Y-%m-%d')
+        messages = []
+        async for message in ctx.channel.history(limit=None):
+            messages.append(message)
 
-        msg = BotController.retrieve_messages(channel_id)  # get messages from discord
-        filtered_messages = BotController.get_specific_attributes(msg, timestamp1,timestamp2)  # filter messages with given timestamps
-        # msg_sentiment = BotController.gpt_response(filtered_messages)  # get sentiment for messages
-        msg_sentiment = 'neutral'
-        elastic = BotController.messages_elastic(date_range, filtered_messages,msg_sentiment)  # create new elastic index
-        print(elastic)
-        emojie = "\U0001F44B"
-        await ctx.reply(f"{emojie} Message sentiment: {msg_sentiment}")
-        await bot.close()
+        if start_date > datetime.now() and end_date > datetime.now():
+            await owner.send('Both dates are invalid.')
+            return
+        elif start_date > datetime.now():
+            filtered_messages = [msg for msg in messages if msg.created_at.date() <= end_date.date()]
+        elif end_date > datetime.now():
+            filtered_messages = [msg for msg in messages if msg.created_at.date() >= start_date.date()]
+        else:
+            filtered_messages = [msg for msg in messages if
+                                 start_date.date() <= msg.created_at.date() <= end_date.date()]
+        if len(filtered_messages) == 0:
+            await owner.send('No messages found between the specified dates.')
+        else:
+            messages_content = BotController.get_specific_attributes(filtered_messages)
+            msg_sentiment = BotController.gpt_response(messages_content)
+            # msg_sentiment = 'neutral'
+            elastic = BotController.messages_elastic(date_range, messages_content,
+                                                     msg_sentiment)  # create new elastic index
+            print(elastic)
+            print('done')
+            emojie = "\U0001F44B"
+            await owner.send(f"{emojie} Message sentiment: {msg_sentiment}")
+            await bot.close()
     except ValueError:
-        await ctx.send("NO Sentiment to Show")
-        await bot.close()
+        await ctx.send('Invalid date format. Please use the format YYYY-MM-DD.')
+
+
+# @bot.event
+# async def on_command_error(ctx, error):
+#     if isinstance(error, commands.MissingRole):
+#         await ctx.send("You do not have the required role to use this command.")
 
 
 bot.run('')  # Bot ID
