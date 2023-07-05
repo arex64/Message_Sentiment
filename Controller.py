@@ -1,12 +1,11 @@
 import json
 from datetime import datetime
-
 import requests
 from elasticsearch import Elasticsearch
+import discord
 
 
 class BotController:
-
     def retrieve_messages(channel_id):
         headers = {
             'authorization': ''
@@ -28,6 +27,11 @@ class BotController:
             print(f"Error: {response.status_code}")
 
     def get_specific_attributes(msg, timestamp1, timestamp2):
+        if timestamp1 == None:
+            timestamp1 = timestamp2
+        elif timestamp2 == None:
+            timestamp2 = timestamp1
+
         print(msg)
         messages = msg
         message_info = []
@@ -36,7 +40,7 @@ class BotController:
             print(message)
             message_timestamp = int(datetime.fromisoformat(message['timestamp']).timestamp()) // 1000
             if timestamp1 == timestamp2:  # Get messages with a timestamp after timestamp1
-                if message_timestamp <= timestamp1:
+                if message_timestamp and timestamp1 >= timestamp1:
                     username = message["author"]["username"]
                     content = message['content']
                     timestamp = message['timestamp']
@@ -46,7 +50,15 @@ class BotController:
                         message_info.append(output)
                         print(message_info)
                     result += str(output)
-
+                elif message_timestamp and timestamp2 <= timestamp2:
+                    username = message["author"]["username"]
+                    content = message['content']
+                    timestamp = message['timestamp']
+                    output = {'username': username, 'content': content, 'timestamp': timestamp}
+                    if output not in message_info:
+                        message_info.append(output)
+                        print(message_info)
+                    result += str(output)
             else:
                 if timestamp1 <= message_timestamp <= timestamp2:  # Get messages with between timestamp1 and timestamp2
                     username = message["author"]["username"]
